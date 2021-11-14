@@ -1,43 +1,61 @@
-import java.util.List;
-import java.util.Random;
+public class Agent {
+    protected Environnement e;
+    protected String tag;
+    protected String targetAgent;
 
-public class Agent extends Thread{
-    private Environnement e;
-    private Agent targetAgent;
+    //argument utile seulement pour la deuxième partie avec les agents communiquant
+    protected String currentStep;
 
-    public void run() {
-        System.out.println("Yo");
+    public Agent(String tag) {
+        this.tag = tag;
     }
 
-    public void push(){
-        if(!e.canMove(this)){
-            e.push(this);
+    public void moveOrPush() {
+        if (!e.canMove(this)) {
+            push();
         } else {
-            moveTo();
+            move();
         }
     }
 
-    public void moveTo(){
-        List<Agent> availableAgent = e.getFreePlaces(this);
-        int rand = 0;
-        if(availableAgent.contains(targetAgent)){
-            e.moveTo(this,targetAgent);
-        } else {
-            if(availableAgent.contains(null)){
-                e.moveTo(this,null);
-            } else {
-                rand = new Random().nextInt(availableAgent.size());
-                e.moveTo(this,availableAgent.get(rand));
-            }
-        }
+    public void push() {
+        e.push(this);
     }
 
-    public boolean isGood(){
-        if (e.whoUnder(this).equals(targetAgent)) return true;
-        else return false;
+    public void move() {
+        e.move(this);
     }
 
-    public void setTargetAgent(Agent targetAgent) {
+    public String getTargetAgent() {
+        return targetAgent;
+    }
+
+    public void setTargetAgent(String targetAgent) {
         this.targetAgent = targetAgent;
+    }
+
+    public void setE(Environnement e) {
+        this.e = e;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public String perception() {
+        return e.whoUnder(this);
+    }
+
+    public boolean action() {
+        String under = perception();
+        if (under.equals(targetAgent)) return false;
+        else {
+            moveOrPush();
+            return true;
+        }
+    }
+
+    public void setCurrentStep(String currentStep) {
+        this.currentStep = currentStep;
     }
 }

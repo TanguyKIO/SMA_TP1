@@ -1,83 +1,139 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 public class Environnement {
-    private Stack<Agent> solutionStack;
-    private ArrayList<Pile> piles;
+    private ArrayList<Stack<Agent>> piles = new ArrayList<>();
     private ArrayList<Agent> agents;
 
-    public Environnement(Stack initStack, Stack solutionStack, ArrayList<Agent> agents) {
-        this.solutionStack = solutionStack;
+    public Environnement(Stack<Agent> initStack, ArrayList<Agent> agents) {
         this.agents = agents;
-        piles.add(new Pile(initStack, new Emplacement(1)));
-        piles.add(new Pile(new Stack(), new Emplacement(2)));
-        piles.add(new Pile(new Stack(), new Emplacement(3)));
+        piles.add(initStack);
+        piles.add(new Stack());
+        piles.add(new Stack());
     }
 
     public boolean canMove(Agent agent) {
         Agent a;
-        for (Pile pile : piles) {
-            a = pile.stack.peek();
-            if (a.equals(agent)) {
-                return true;
+        for (Stack<Agent> pile : piles) {
+            if (!pile.isEmpty()) {
+                a = pile.peek();
+                if (a.equals(agent)) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    public Agent whoUnder(Agent agent) {
-        boolean next = false;
+    public String whoUnder(Agent agent) {
         Agent previousAgent = null;
-        for (Pile pile : piles) {
-            for (Agent a : pile.stack) {
+        for (Stack<Agent> pile : piles) {
+            for (Agent a : pile) {
                 if (a.equals(agent)) {
-                    return previousAgent;
+                    if (previousAgent == null) return "Table";
+                    else {
+                        return previousAgent.getTag();
+                    }
                 }
                 previousAgent = a;
             }
+            previousAgent = null;
         }
-        return null;
+        return "Table";
     }
 
-    public void push(Agent agent) {
+    public boolean push(Agent agent) {
         boolean next = false;
-        Agent previousAgent = null;
-        for (Pile pile : piles) {
-            for (Agent a : pile.stack) {
+        Agent lastAgent = null;
+        for (Stack<Agent> pile : piles) {
+            for (Agent a : pile) {
                 if (next) {
-                    a.push();
+                    a.moveOrPush();
+                    return true;
                 }
                 if (a.equals(agent)) {
                     next = true;
+                    lastAgent = a;
+                }
+            }
+        }
+        lastAgent.moveOrPush();
+        return false;
+    }
+
+    public void move(Agent a) {
+        Stack<Agent> previousStack = null;
+        for (Stack<Agent> pile : piles) {
+            if (pile.contains(a)) {
+                piles.get(piles.indexOf(pile)).remove(a);
+                previousStack = pile;
+            }
+        }
+        while (true) {
+            int rand = new Random().nextInt(piles.size());
+            if (!(previousStack == piles.get(rand))) {
+                piles.get(rand).push(a);
+                break;
+            }
+        }
+    }
+
+    public void move(Agent a, String step) {
+        Stack<Agent> previousStack = null;
+        ArrayList<String> tops = new ArrayList<>();
+        for (Stack<Agent> pile : piles) {
+            if (pile.contains(a)) {
+                piles.get(piles.indexOf(pile)).remove(a);
+                previousStack = pile;
+            }
+            if (pile.isEmpty()) tops.add("Table");
+            else tops.add(pile.peek().getTag());
+        }
+        String target = a.getTargetAgent();
+        while (true) {
+            int rand = new Random().nextInt(piles.size());
+            String destination;
+            if (piles.get(rand).size() == 0) destination = "Table";
+            else destination = piles.get(rand).peek().getTag();
+            if (target == step) {
+                if (!(previousStack == piles.get(rand)) && !tops.contains(step)) {
+                    piles.get(rand).push(a);
+                    break;
+                } else if (!(previousStack == piles.get(rand)) && destination == target) {
+                    piles.get(rand).push(a);
+                    break;
+                }
+            } else {
+                if (!(previousStack == piles.get(rand)) && (destination != step || previousStack.size() == 3)) {
+                    piles.get(rand).push(a);
+                    break;
                 }
             }
         }
     }
 
-    public List<Agent> getFreePlaces(Agent a) {
-        ArrayList<Agent> availableAgent = null;
-        for (Pile pile : piles) {
-            if (pile.stack.empty()) availableAgent.add(null);
-            else availableAgent.add(pile.stack.peek());
+    public boolean verify() {
+        boolean verified = false;
+        for (Agent a : agents) {
+            if (whoUnder(a).equals(a.getTargetAgent())) verified = true;
+            else {
+                verified = false;
+                break;
+            }
         }
-        return availableAgent;
+        return verified;
     }
 
-    public void moveTo(Agent a, Agent b) {
-        boolean next = false;
-        Agent previousAgent = null;
-        ArrayList<Pile> pilesCopy = (ArrayList<Pile>) piles.clone();
-        for (Pile pile : pilesCopy) {
-            if (pile.stack.contains(a)) piles.get(pilesCopy.indexOf(pile)).stack.remove(a);
-            if (pile.stack.peek().equals(b)) piles.get(pilesCopy.indexOf(pile)).stack.push(a);
+    public void showEnv(int iteration) {
+        System.out.println("Action n°" + iteration);
+        for (Stack<Agent> pile : piles) {
+            for (Agent a : pile) {
+                System.out.print("|" + a.getTag() + "| ");
+            }
+            System.out.println();
         }
     }
 
-    public boolean verify(){
-        for(Pile pile: piles) {
-            if (pile.stack.equals(solutionStack)) return true;
-        }
-        return false;
+    public ArrayList<Agent> getAgents() {
+        return agents;
     }
 }
