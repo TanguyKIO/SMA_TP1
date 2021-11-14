@@ -12,13 +12,14 @@ public class AgentCommuniquant extends Agent {
         if (!e.canMove(this)) {
             push();
         } else {
-            move();
+            move(perception());
         }
     }
 
-    @Override
-    public void move() {
-        e.move(this, currentStep);
+    public void move(String under) {
+        e.move(this);
+        String newUnder = perception();
+        if ((newUnder == currentStep && newUnder != targetAgent) || under == newUnder) move(under);
     }
 
     public boolean askIfTargetBlocked() {
@@ -32,7 +33,7 @@ public class AgentCommuniquant extends Agent {
         return false;
     }
 
-    public void askAgent(){
+    public void askAgent() {
         List<Agent> agents = e.getAgents();
         for (Agent a : agents) {
             if (a.targetAgent == currentStep) {
@@ -42,11 +43,12 @@ public class AgentCommuniquant extends Agent {
     }
 
     public boolean action() {
-        if(perception() == targetAgent && targetAgent == currentStep) {
+        if (perception() == targetAgent && targetAgent == currentStep) {
             communicateNewStep();
-        } else if (currentStep == perception()) {
+        }
+        if (currentStep == perception()) {
             moveOrPush();
-        } else if (askIfTargetBlocked());
+        } else if (askIfTargetBlocked()) ;
         else if (currentStep == targetAgent) {
             moveOrPush();
             if (perception() == targetAgent) {

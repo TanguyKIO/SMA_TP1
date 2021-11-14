@@ -3,8 +3,7 @@ import java.util.Stack;
 
 public class Main {
 
-    public static void main(String args[])
-    {
+    public static void main(String args[]) {
 
         //Partie 1
         // à commenter / décommenter selon la partie à tester
@@ -38,13 +37,13 @@ public class Main {
         initStack.push(d);
 
         //solution stack that we want
-        a.setTargetAgent("C");
+        a.setTargetAgent("Table");
         b.setTargetAgent("D");
-        c.setTargetAgent("Table");
-        d.setTargetAgent("A");
+        c.setTargetAgent("A");
+        d.setTargetAgent("C");
 
-        Environnement e = new Environnement(initStack,agents);
-        for(Agent agent : agents) agent.setE(e);
+        Environnement e = new Environnement(initStack, agents);
+        for (Agent agent : agents) agent.setE(e);
 
         launch(e, agents);
 
@@ -53,12 +52,12 @@ public class Main {
     private static boolean launch(Environnement e, ArrayList<Agent> agents) {
         boolean timeout = false;
         int iteration = 0;
-        while(!timeout){
-            for(Agent agent: agents){
+        while (!timeout) {
+            for (Agent agent : agents) {
                 agent.action();
                 iteration++;
                 e.showEnv(iteration);
-                if(e.verify()) return true;
+                if (e.verify()) return true;
             }
         }
         return false;

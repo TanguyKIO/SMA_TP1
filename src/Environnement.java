@@ -77,40 +77,6 @@ public class Environnement {
         }
     }
 
-    public void move(Agent a, String step) {
-        Stack<Agent> previousStack = null;
-        ArrayList<String> tops = new ArrayList<>();
-        for (Stack<Agent> pile : piles) {
-            if (pile.contains(a)) {
-                piles.get(piles.indexOf(pile)).remove(a);
-                previousStack = pile;
-            }
-            if (pile.isEmpty()) tops.add("Table");
-            else tops.add(pile.peek().getTag());
-        }
-        String target = a.getTargetAgent();
-        while (true) {
-            int rand = new Random().nextInt(piles.size());
-            String destination;
-            if (piles.get(rand).size() == 0) destination = "Table";
-            else destination = piles.get(rand).peek().getTag();
-            if (target == step) {
-                if (!(previousStack == piles.get(rand)) && !tops.contains(step)) {
-                    piles.get(rand).push(a);
-                    break;
-                } else if (!(previousStack == piles.get(rand)) && destination == target) {
-                    piles.get(rand).push(a);
-                    break;
-                }
-            } else {
-                if (!(previousStack == piles.get(rand)) && (destination != step || previousStack.size() == 3)) {
-                    piles.get(rand).push(a);
-                    break;
-                }
-            }
-        }
-    }
-
     public boolean verify() {
         boolean verified = false;
         for (Agent a : agents) {
